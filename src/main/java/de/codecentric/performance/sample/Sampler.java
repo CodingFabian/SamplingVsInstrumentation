@@ -1,5 +1,7 @@
 package de.codecentric.performance.sample;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class Sampler {
 
 		private long overhead = 0;
 		private long lastSample;
+		private long lastCPUSample;
 		private String lastMethod;
 
 		public Agent(final String thread, final long samplingInterval) {
@@ -63,7 +66,9 @@ public class Sampler {
 
 		@Override
 		public void run() {
-			lastSample = System.currentTimeMillis();
+			ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+			lastSample = System.nanoTime();
+			lastCPUSample = threadMXBean.getThreadCpuTime(monitoredThread.getId());
 			while (true) {
 				try {
 					Thread.sleep(interval);
@@ -72,18 +77,18 @@ public class Sampler {
 				}
 
 				String currentMethod = getCurrentMethod();
-				long currentSample = System.currentTimeMillis();
-
-				addMeasurementsIfStillInMethod(currentMethod, currentSample);
+				long currentSample = System.nanoTime();
+				long currentCPUSample = threadMXBean.getThreadCpuTime(monitoredThread.getId());
+				addMeasurementsIfStillInMethod(currentMethod, currentSample, currentCPUSample);
 
 				lastMethod = currentMethod;
 				lastSample = currentSample;
 
-				overhead += System.currentTimeMillis() - currentSample;
+				overhead += System.nanoTime() - currentSample;
 			}
 		}
 
-		private void addMeasurementsIfStillInMethod(final String currentMethod, final long currentSample) {
+		private void addMeasurementsIfStillInMethod(final String currentMethod, final long currentSample, final long currentCPUSample) {
 			if (currentMethod.equals(lastMethod)) {
 				MethodStatistics statistics = methodStatistics.get(currentMethod);
 				if (statistics == null) {
@@ -91,6 +96,7 @@ public class Sampler {
 					methodStatistics.put(currentMethod, statistics);
 				}
 				statistics.addTime(currentSample - lastSample);
+				statistics.addCPUTime(currentCPUSample - lastCPUSample);
 			} else {
 				if (executionPath.size() < MAX_EXECUTION_PATH) {
 					executionPath.add(getParentMethod() + " > " + currentMethod);

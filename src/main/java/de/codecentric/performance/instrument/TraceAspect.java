@@ -1,5 +1,7 @@
 package de.codecentric.performance.instrument;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.aspectj.lang.annotation.Aspect;
 import de.codecentric.performance.util.MethodStatistics;
 import de.codecentric.performance.util.MethodStatisticsHelper;
 import de.codecentric.performance.util.MoreMethodStatistics;
+import de.codecentric.performance.util.Time;
 
 /**
  * Note: this Aspect is for demo purpose only and is not threadsafe!
@@ -23,11 +26,13 @@ public final class TraceAspect {
 	private Map<String, MethodStatistics> methodStatistics;
 	private LinkedList<String> executionPath;
 	private long overhead;
+	private ThreadMXBean threadMXBean;
 
 	public void init() {
 		methodStatistics = new HashMap<String, MethodStatistics>();
 		executionPath = new LinkedList<String>();
 		overhead = 0;
+		threadMXBean = ManagementFactory.getThreadMXBean();
 	}
 
 	/**
@@ -35,9 +40,11 @@ public final class TraceAspect {
 	 */
 	@Around("   call(void de.codecentric.performance.Demo.method* (..)) ")
 	public void aroundDemoMethodCall(final ProceedingJoinPoint thisJoinPoint) throws Throwable {
-		long start = System.currentTimeMillis();
+		long cpuStart = threadMXBean.getCurrentThreadCpuTime();
+		long start = System.nanoTime();
 		thisJoinPoint.proceed();
-		long end = System.currentTimeMillis();
+		long end = System.nanoTime();
+		long cpuEnd = threadMXBean.getCurrentThreadCpuTime();
 
 		String currentMethod = thisJoinPoint.getSignature().toString();
 		if (executionPath.size() < MAX_EXECUTION_PATH) {
@@ -49,7 +56,8 @@ public final class TraceAspect {
 			methodStatistics.put(currentMethod, statistics);
 		}
 		statistics.addTime(end - start);
-		overhead += System.currentTimeMillis() - end;
+		statistics.addCPUTime(cpuEnd - cpuStart);
+		overhead += System.nanoTime() - end;
 	}
 
 	public void printStatistics() {
@@ -67,7 +75,7 @@ public final class TraceAspect {
 			System.out.println("Execution Path incomplete!");
 		}
 
-		System.out.printf("Agent internal Overhead %dms%n", overhead);
+		System.out.printf("Agent internal Overhead %dms%n", Time.nsToMs(overhead));
 	}
 
 }

@@ -1,6 +1,7 @@
 package de.codecentric.performance.sample;
 
 import de.codecentric.performance.DemoRunner;
+import de.codecentric.performance.util.Time;
 
 public class SampledDemoRunner extends DemoRunner {
 
@@ -12,17 +13,17 @@ public class SampledDemoRunner extends DemoRunner {
 	}
 
 	private static void sampleDemo(final DemoType type) {
-		long startMain = System.currentTimeMillis();
+		long startMain = System.nanoTime();
 		Sampler sampler = new Sampler("main", SAMPLING_INTERVAL_10MS);
 
-		long startCode = System.currentTimeMillis();
+		long startCode = System.nanoTime();
 		runDemo(type);
-		long endCode = System.currentTimeMillis();
-		System.out.printf("%s Demo completed in %dms%n", type, endCode - startCode);
+		long endCode = System.nanoTime();
+		System.out.printf("%s Demo completed in %dms%n", type, Time.nsToMs(endCode - startCode));
 
 		sampler.printStatistics();
-		long endMain = System.currentTimeMillis();
-		System.out.printf("Agent Overhead %dms%n", (endMain - startMain) - (endCode - startCode));
+		long endMain = System.nanoTime();
+		System.out.printf("Agent Overhead %dms%n", Time.nsToMs((endMain - startMain) - (endCode - startCode)));
 	}
 
 }

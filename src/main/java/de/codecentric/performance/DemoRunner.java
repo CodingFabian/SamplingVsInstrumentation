@@ -5,15 +5,15 @@ import java.util.Arrays;
 public class DemoRunner {
 
 	public static void main(final String[] args) {
-		long start = System.currentTimeMillis();
+		long start = System.nanoTime();
 		mixedDemo();
-		long end = System.currentTimeMillis();
-		System.out.printf("%s Demo completed in %dms%n", DemoType.MIXED, end - start);
+		long end = System.nanoTime();
+		System.out.printf("%s Demo completed in %dms%n", DemoType.MIXED, Time.nsToMs(endCode - startCode));
 
-		start = System.currentTimeMillis();
+		start = System.nanoTime();
 		massDemo();
-		end = System.currentTimeMillis();
-		System.out.printf("%s Demo completed in %dms%n", DemoType.MASS, end - start);
+		end = System.nanoTime();
+		System.out.printf("%s Demo completed in %dms%n", DemoType.MASS, Time.nsToMs(endCode - startCode));
 	}
 
 	/**

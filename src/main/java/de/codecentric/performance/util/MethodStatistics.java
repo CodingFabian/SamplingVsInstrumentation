@@ -4,6 +4,7 @@ public class MethodStatistics implements Comparable<MethodStatistics> {
 
 	private final String currentMethod;
 	private long time = 0;
+	private long cpuTime = 0;
 
 	public MethodStatistics(final String method) {
 		this.currentMethod = method;
@@ -13,9 +14,13 @@ public class MethodStatistics implements Comparable<MethodStatistics> {
 		this.time += timeSpent;
 	}
 
+	public void addCPUTime(final long cpuTimeSpent) {
+		this.cpuTime += cpuTimeSpent;
+	}
+
 	@Override
 	public String toString() {
-		return String.format("%s %dms", currentMethod, time);
+		return String.format("%s %dms %dms", currentMethod, Time.nsToMs(time), Time.nsToMs(cpuTime));
 	}
 
 	@Override

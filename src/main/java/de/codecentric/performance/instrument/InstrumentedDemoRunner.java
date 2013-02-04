@@ -3,6 +3,7 @@ package de.codecentric.performance.instrument;
 import org.aspectj.lang.Aspects;
 
 import de.codecentric.performance.DemoRunner;
+import de.codecentric.performance.util.Time;
 
 /**
  * Note, this requires an aspectjweaver as javaagent:
@@ -16,19 +17,21 @@ public class InstrumentedDemoRunner extends DemoRunner {
 	}
 
 	private static void instrumentDemo(final DemoType type) {
-		long startMain = System.currentTimeMillis();
+		long startMain = System.nanoTime();
 		TraceAspect trace = Aspects.aspectOf(TraceAspect.class);
 		trace.init();
 
-		long startCode = System.currentTimeMillis();
+		long startCode = System.nanoTime();
 
 		runDemo(type);
 
-		long endCode = System.currentTimeMillis();
-		System.out.printf("%s Demo completed in %dms%n", type, endCode - startCode);
+		long endCode = System.nanoTime();
+		System.out.printf("%s Demo completed in %dms%n", type,
+				Time.nsToMs(endCode - startCode));
 
 		trace.printStatistics();
-		long endMain = System.currentTimeMillis();
-		System.out.printf("Agent Overhead %dms%n", (endMain - startMain) - (endCode - startCode));
+		long endMain = System.nanoTime();
+		System.out.printf("Agent Overhead %dms%n",
+				Time.nsToMs((endMain - startMain) - (endCode - startCode)));
 	}
 }
