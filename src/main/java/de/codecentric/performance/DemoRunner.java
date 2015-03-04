@@ -27,7 +27,7 @@ public class DemoRunner {
 		new Demo().runCode(methods);
 	}
 
-	private static final int MASS_1MS_CALL_COUNT = 100000000;
+	private static final int MASS_1MS_CALL_COUNT = 100_000_000;
 
 	/**
 	 * long exercise running fast method 100000000 times.
