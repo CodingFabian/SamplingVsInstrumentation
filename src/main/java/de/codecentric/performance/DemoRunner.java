@@ -2,18 +2,20 @@ package de.codecentric.performance;
 
 import java.util.Arrays;
 
+import de.codecentric.performance.util.Time;
+
 public class DemoRunner {
 
 	public static void main(final String[] args) {
 		long start = System.nanoTime();
 		mixedDemo();
 		long end = System.nanoTime();
-		System.out.printf("%s Demo completed in %dms%n", DemoType.MIXED, Time.nsToMs(endCode - startCode));
+		System.out.printf("%s Demo completed in %dms%n", DemoType.MIXED, Time.nsToMs(end - start));
 
 		start = System.nanoTime();
 		massDemo();
 		end = System.nanoTime();
-		System.out.printf("%s Demo completed in %dms%n", DemoType.MASS, Time.nsToMs(endCode - startCode));
+		System.out.printf("%s Demo completed in %dms%n", DemoType.MASS, Time.nsToMs(end - start));
 	}
 
 	/**
