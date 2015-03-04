@@ -80,9 +80,9 @@ public class Demo {
 		while (true) {
 			if (System.currentTimeMillis() > timeMillis + 100)
 				return;
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < 10_000; i++) {
 				// busy wait
-				if (i == 10000)
+				if (i == 10_000)
 					break;
 			}
 		}
@@ -93,9 +93,9 @@ public class Demo {
 		while (true) {
 			if (System.currentTimeMillis() > timeMillis + 200)
 				return;
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < 10_000; i++) {
 				// busy wait
-				if (i == 10000)
+				if (i == 10_000)
 					break;
 			}
 		}
@@ -106,9 +106,9 @@ public class Demo {
 		while (true) {
 			if (System.currentTimeMillis() > timeMillis + 500)
 				return;
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < 10_000; i++) {
 				// busy wait
-				if (i == 10000)
+				if (i == 10_000)
 					break;
 			}
 		}
