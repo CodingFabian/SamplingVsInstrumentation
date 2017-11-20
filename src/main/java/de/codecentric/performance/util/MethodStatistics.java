@@ -25,7 +25,7 @@ public class MethodStatistics implements Comparable<MethodStatistics> {
 
 	@Override
 	public int compareTo(final MethodStatistics o) {
-		return (time < o.time ? -1 : (time == o.time ? 0 : 1));
+		return (Long.compare(time, o.time));
 	}
 
 	@Override
