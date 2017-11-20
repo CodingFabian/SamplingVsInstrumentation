@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.codecentric.performance.util.MethodStatistics;
 import de.codecentric.performance.util.MethodStatisticsHelper;
 import de.codecentric.performance.util.ThreadFinder;
+import de.codecentric.performance.util.Time;
 
 public class Sampler {
 
@@ -55,13 +56,15 @@ public class Sampler {
 				System.out.println(statistic);
 			}
 			System.out.printf("Code Execution Path:%n");
-			for (String method : executionPath) {
-				System.out.println(method);
+			synchronized (executionPath) {
+				for (String method : executionPath) {
+					System.out.println(method);
+				}
+				if (executionPath.size() == MAX_EXECUTION_PATH) {
+					System.out.println("Execution Path incomplete!");
+				}
 			}
-			if (executionPath.size() == MAX_EXECUTION_PATH) {
-				System.out.println("Execution Path incomplete!");
-			}
-			System.out.printf("Agent internal Overhead %dms%n", overhead);
+			System.out.printf("Agent internal Overhead %dms%n", Time.nsToMs(overhead));
 		}
 
 		@Override
@@ -102,10 +105,12 @@ public class Sampler {
 				statistics.addTime(currentSample - lastSample);
 				statistics.addCPUTime(currentCPUSample - lastCPUSample);
 			} else {
-				if (executionPath.size() < MAX_EXECUTION_PATH) {
-					String parentMethod = getParentMethod();
-					if (parentMethod != null) {
-						executionPath.add(getParentMethod() + " > " + currentMethod);
+				synchronized (executionPath) {
+					if (executionPath.size() < MAX_EXECUTION_PATH) {
+						String parentMethod = getParentMethod();
+						if (parentMethod != null) {
+							executionPath.add(getParentMethod() + " > " + currentMethod);
+						}
 					}
 				}
 			}
