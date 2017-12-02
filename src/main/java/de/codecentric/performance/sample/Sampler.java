@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.codecentric.performance.util.MethodStatistics;
 import de.codecentric.performance.util.MethodStatisticsHelper;
 import de.codecentric.performance.util.ThreadFinder;
+import de.codecentric.performance.util.Time;
 
 public class Sampler {
 
@@ -55,13 +56,15 @@ public class Sampler {
 				System.out.println(statistic);
 			}
 			System.out.printf("Code Execution Path:%n");
-			for (String method : executionPath) {
-				System.out.println(method);
+			synchronized (executionPath) {
+				for (String method : executionPath) {
+					System.out.println(method);
+				}
+				if (executionPath.size() == MAX_EXECUTION_PATH) {
+					System.out.println("Execution Path incomplete!");
+				}
 			}
-			if (executionPath.size() == MAX_EXECUTION_PATH) {
-				System.out.println("Execution Path incomplete!");
-			}
-			System.out.printf("Agent internal Overhead %dms%n", overhead);
+			System.out.printf("Agent internal Overhead %dms%n", Time.nsToMs(overhead));
 		}
 
 		@Override
@@ -76,13 +79,17 @@ public class Sampler {
 					Thread.currentThread().interrupt();
 				}
 
-				String currentMethod = getCurrentMethod();
 				long currentSample = System.nanoTime();
 				long currentCPUSample = threadMXBean.getThreadCpuTime(monitoredThread.getId());
+				String currentMethod = getCurrentMethod();
+				if (currentMethod == null) {
+					continue;
+				}
 				addMeasurementsIfStillInMethod(currentMethod, currentSample, currentCPUSample);
 
 				lastMethod = currentMethod;
 				lastSample = currentSample;
+				lastCPUSample = currentCPUSample;
 
 				overhead += System.nanoTime() - currentSample;
 			}
@@ -98,25 +105,30 @@ public class Sampler {
 				statistics.addTime(currentSample - lastSample);
 				statistics.addCPUTime(currentCPUSample - lastCPUSample);
 			} else {
-				if (executionPath.size() < MAX_EXECUTION_PATH) {
-					executionPath.add(getParentMethod() + " > " + currentMethod);
+				synchronized (executionPath) {
+					if (executionPath.size() < MAX_EXECUTION_PATH) {
+						String parentMethod = getParentMethod();
+						if (parentMethod != null) {
+							executionPath.add(getParentMethod() + " > " + currentMethod);
+						}
+					}
 				}
 			}
 		}
 
 		private String getCurrentMethod() {
-			StackTraceElement topOfStack = monitoredThread.getStackTrace()[0];
+			StackTraceElement topOfStack = monitoredThread.isAlive() ? monitoredThread.getStackTrace()[0] : null;
 			return formatStackElement(topOfStack);
 		}
 
 		private String getParentMethod() {
-			StackTraceElement parentOfTopOfStack = monitoredThread.getStackTrace()[1];
+			StackTraceElement parentOfTopOfStack = monitoredThread.isAlive() ? monitoredThread.getStackTrace()[1] : null;
 			return formatStackElement(parentOfTopOfStack);
 		}
 
 		private String formatStackElement(final StackTraceElement topOfStack) {
 			// match results of Aspect output for demo purpose
-			return "void " + topOfStack.getClassName() + "." + topOfStack.getMethodName() + "()";
+			return topOfStack != null ? "void " + topOfStack.getClassName() + "." + topOfStack.getMethodName() + "()" : null;
 		}
 	}
 

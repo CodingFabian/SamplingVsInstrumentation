@@ -21,7 +21,7 @@ public class MoreMethodStatistics extends MethodStatistics {
 
 	@Override
 	public String toString() {
-		return super.toString() + String.format(" (min: %dms, max: %dms) - %d invocations", min, max, count);
+		return super.toString() + String.format(" (min: %dms, max: %dms) - %d invocations", Time.nsToMs(min), Time.nsToMs(max), count);
 	}
 
 	@Override
